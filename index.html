@@ -55,7 +55,7 @@
                 <div class="hero-card">
                     <strong>${h.name}</strong> (SPD: ${h.speed})<br>
                     HP: ${Math.max(0, h.hp)} / ${h.maxHp}
-                    <div class="hp-bar"><div class="hp-fill" style="width: ${Math.max(0, (h.hp/h.maxHp)*100)}`%"></div></div>
+                    <div class="hp-bar"><div class="hp-fill" style="width: ${Math.max(0, (h.hp/h.maxHp)*100)}%"></div></div>
                 </div>
             `).join('');
             
@@ -63,14 +63,14 @@
                 <div class="hero-card enemy">
                     <strong>${h.name}</strong> (SPD: ${h.speed})<br>
                     HP: ${Math.max(0, h.hp)} / ${h.maxHp}
-                    <div class="hp-bar"><div class="hp-fill enemy" style="width: ${Math.max(0, (h.hp/h.maxHp)*100)}`%"></div></div>
+                    <div class="hp-bar"><div class="hp-fill enemy" style="width: ${Math.max(0, (h.hp/h.maxHp)*100)}%"></div></div>
                 </div>
             `).join('');
         }
 
         function log(msg) {
             const l = document.getElementById("log");
-            l.innerHTML += msg + "<br>";
+            l.innerHTML += msg + "<br >";
             l.scrollTop = l.scrollHeight;
         }
 
