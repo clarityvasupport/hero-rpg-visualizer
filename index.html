@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero RPG - Combat Simulator</title>
+    <style>
+        body { background-color: #1a1a2e; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .battlefield { display: flex; justify-content: space-between; width: 100%; max-width: 800px; margin-top: 20px; }
+        .team { display: flex; flex-direction: column; gap: 10px; width: 45%; }
+        .hero-card { background: #16213e; padding: 10px; border-radius: 5px; border: 2px solid #0f3460; }
+        .hero-card.enemy { border-color: #e94560; }
+        .hp-bar { height: 10px; background: #333; border-radius: 5px; margin-top: 5px; overflow: hidden; }
+        .hp-fill { height: 100%; background: #4ecca3; transition: width 0.3s ease; }
+        .hp-fill.enemy { background: #e94560; }
+        .log { width: 100%; max-width: 800px; height: 200px; background: #000; margin-top: 20px; padding: 10px; overflow-y: scroll; border-radius: 5px; font-family: monospace; }
+        button { padding: 10r�px 20px; font-size: 18px; background: #e94560; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        button:hover { background: #ff5e7a; }
+        button:active { background: #b33345; }
+        button:disabled { background: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Turn-Based Combat Simulator</h1>
+    <button id="startBtn" onclick="startBattle()">Start Battle</button>
+    <div class="battlefield">
+        <div class="team" id="playerTeam"></div>
+        <div class="team" id="enemyTeam"></div>
+    </div>
+    <div class="log" id="log"></div>
+
+    <script>
+        // Data from our Tier 2 and 3 blueprints
+        const playerTeamData = [
+            { name: "Blazing Centaur", maxHp: 120, atk: 25, armor: 10, speed: 12 },
+            { name: "Universe Sage", maxHp: 80, atk: 40, armor: 5, speed: 15 }
+        ];
+        const enemyTeamData = [
+            { name: "Gladiator 1", maxHp: 100, atk: 20, armor: 8, speed: 10 },
+            { name: "Gladiator 2", maxHp: 100, atk: 20, armor: 8, speed: 9 }
+        ];
+
+        let pTeam = [];
+        let eTeam = [];
+        let isBattling = false;
+
+        function initUI() {
+            pTeam = JSON.parse(JSON.stringify(playerTeamData)).map(h => ({...h, hp: h.maxHp}));
+            eTeam = JSON.parse(JSON.stringify(enemyTeamData)).map(h => ({...h, hp: h.maxHp}));
+            render();
+            document.getElementById("log").innerHTML = "";
+        }
+
+        function render() {
+            document.getElementById("playerTeam").innerHTML = pTeam.map(h => `
+                <div class="hero-card">
+                    <strong>${h.name}</strong> (SPD: ${h.speed})<br>
+                    HP: ${Math.max(0, h.hp)} / ${h.maxHp}
+                    <div class="hp-bar"><div class="hp-fill" style="width: ${Math.max(0, (h.hp/h.maxHp)*100)}|%"></div></div>
+                </div>
+            `).join('');
+            
+            document.getElementById("enemyTeam").innerHTML = eTeam.map(h => `
+                <div class="hero-card enemy">
+                    <strong>${h.name}</strong> (SPD: ${h.speed})<br>
+                    HP: ${Math.max(0, h.hp)} / ${h.maxHp}
+                    <div class="hp-bar"><div class="hp-fill enemy" style="width: ${Math.max(0, (h.hp/h.maxHp)*100)}|%"></div></div>
+                </div>
+            `).join('');
+        }
+
+        function log(msg) {
+            const l = document.getElementById("log");
+            l.innerHTML += msg + "<br>";
+            l.scrollTop = l.scrollHeight;
+        }
+
+        async function startBattle() {
+            if (isBattling) return;
+            isBattling = true;
+            document.getElementById("startBtn").disabled = true;
+            initUI();
+
+            let turn = 1;
+            while (pTeam.some(h => h.hp > 0) && eTeam.some(h => h.hp > 0)) {
+                log(`<b>--- Round ${turn} ---</b>`);
+                
+                // Combine and sort by speed (Turn Order Logic)
+                let all = [...pTeam.map(h => ({z`, isPlayer: true})), ...eTeam.map(h => ({...h, isPlayer: false}))]
+                          .filter(h => h.hp > 0)
+                          .sort((a, b) => b.speed - a.speed);
+
+                for (let attacker of all) {
+                    if (attacker.hp <= 0) continue;
+                    
+                    let enemies = attacker.isPlayer ? eTeam.filter(h => h.hp > 0) : pTeam.filter(h => h.hp > 0);
+                    if (enemies.length === 0) break;
+                    
+                    // Pick random target
+                    let target = enemies[Math.floor(Math.random() * enemies.length)];
+                    
+                    // Damage Calculation (Tier 4 Logic)
+                    let dmg = Math.max(1, attacker.atk - target.armor);
+                    target.hp -= dmg;
+                    
+                    log(`${attacker.name} attacks ${target.name} for <b>${dmg}</b> damage!`);
+                    render();
+                    await new Promise(r => setTimeout(r, 800)); // Wait for animation
+                }
+                turn++;
+            }
+
+            let won = pTeam.some(h => h.hp > 0);
+            log(`<b>Battle Over! ${won ? 'VICTORY'! : 'DEFEAT...'}</b>`);
+            isBattling = false;
+            document.getElementById("startBtn").disabled = false;
+            document.getElementById("startBtn").innerText = "Fight Again";
+        }
+        
+        initUI();
+    </script>
+</body>
+</html>
